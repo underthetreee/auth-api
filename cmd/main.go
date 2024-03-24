@@ -27,6 +27,7 @@ func main() {
 
 	userHandler := v1.NewUserHandler()
 	router := initRoutes(userHandler)
+
 	fmt.Printf("server is listening on %s\n", listenAddr)
 	http.ListenAndServe(listenAddr, router)
 }

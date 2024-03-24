@@ -5,12 +5,13 @@ import (
 )
 
 type UserHandler interface {
-	Login(http.ResponseWriter, *http.Request)
+	Auth(http.ResponseWriter, *http.Request)
 }
 
-func initRoutes(h UserHandler) *http.ServeMux {
+func initRoutes(h UserHandler) http.Handler {
 	m := http.NewServeMux()
 
-	m.HandleFunc("GET /v1/api/login", h.Login)
+	m.HandleFunc("POST /v1/api/auth", h.Auth)
+
 	return m
 }
