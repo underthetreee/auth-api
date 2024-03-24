@@ -11,7 +11,7 @@ type UserHandler interface {
 func initRoutes(h UserHandler) http.Handler {
 	m := http.NewServeMux()
 
-	m.HandleFunc("POST /v1/api/auth", h.Auth)
+	m.HandleFunc("POST /api/auth", h.Auth)
 
 	return m
 }

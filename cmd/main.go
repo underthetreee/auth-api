@@ -2,11 +2,12 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 
-	v1 "github.com/underthetreee/auth-api/internal/transport/http/v1"
+	"github.com/underthetreee/auth-api/internal/repository"
+	"github.com/underthetreee/auth-api/internal/service"
+	api "github.com/underthetreee/auth-api/internal/transport/http"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -23,11 +24,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	_ = c
 
-	userHandler := v1.NewUserHandler()
-	router := initRoutes(userHandler)
+	repo := repository.NewAuthRepository(c)
+	svc := service.NewAuthService(repo)
+	authHandler := api.NewAuthHandler(svc)
+	router := initRoutes(authHandler)
 
-	fmt.Printf("server is listening on %s\n", listenAddr)
+	log.Printf("server is listening on %s\n", listenAddr)
 	http.ListenAndServe(listenAddr, router)
 }

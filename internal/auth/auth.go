@@ -54,7 +54,7 @@ func genRefreshToken() (string, error) {
 	return token, err
 }
 
-func hashRefreshToken(token string) (string, error) {
+func HashRefreshToken(token string) (string, error) {
 	hashedToken, err := bcrypt.GenerateFromPassword([]byte(token), bcrypt.DefaultCost)
 	if err != nil {
 		return "", err
