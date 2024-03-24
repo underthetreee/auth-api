@@ -1,7 +1,7 @@
 .SILENT:
 
 build:
-	go build -o bin/app cmd/main.go
+	go build -o bin/app cmd/*.go
 
 run: build
 	./bin/app
