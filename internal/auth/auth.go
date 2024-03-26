@@ -30,7 +30,7 @@ func GenTokenPair(guid string) (*model.TokenPair, error) {
 }
 
 func genJWTToken(guid string) (string, error) {
-	jwtTokenExpTime := time.Now().Add(time.Minute * 60).Unix()
+	jwtTokenExpTime := time.Now().Add(time.Hour * 1).Unix()
 
 	t := jwt.NewWithClaims(jwt.SigningMethodHS512,
 		jwt.MapClaims{
@@ -50,8 +50,8 @@ func genRefreshToken() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	token := base64.StdEncoding.EncodeToString(tokenBytes)
-	return token, err
+	token := base64.URLEncoding.EncodeToString(tokenBytes)
+	return token, nil
 }
 
 func HashRefreshToken(token string) (string, error) {

@@ -5,10 +5,12 @@ import (
 
 	"github.com/underthetreee/auth-api/internal/auth"
 	"github.com/underthetreee/auth-api/internal/model"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type AuthRepository interface {
-	Store(context.Context, model.HashedRefreshToken) error
+	StoreToken(context.Context, model.HashedRefreshToken) error
+	DeleteToken(context.Context, model.RefreshToken) error
 }
 
 type AuthService struct {
@@ -28,12 +30,35 @@ func (s *AuthService) StoreRefreshToken(ctx context.Context, token model.Refresh
 	}
 
 	t := model.HashedRefreshToken{
+		ID:    primitive.NewObjectID(),
 		GUID:  token.GUID,
 		Token: hashedToken,
 	}
 
-	if err := s.repo.Store(ctx, t); err != nil {
+	if err := s.repo.StoreToken(ctx, t); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (s *AuthService) RefreshAccessToken(ctx context.Context, token model.RefreshToken) (*model.TokenPair, error) {
+	if err := s.repo.DeleteToken(ctx, token); err != nil {
+		return nil, err
+	}
+
+	tokenPair, err := auth.GenTokenPair(token.GUID)
+	if err != nil {
+		return nil, err
+	}
+
+	t := model.RefreshToken{
+		GUID:  token.GUID,
+		Token: tokenPair.RefreshToken,
+	}
+
+	if err := s.StoreRefreshToken(ctx, t); err != nil {
+		return nil, err
+	}
+
+	return tokenPair, nil
 }
