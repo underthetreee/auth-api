@@ -7,20 +7,23 @@ import (
 
 	"github.com/beevik/guid"
 	"github.com/underthetreee/auth-api/internal/auth"
+	"github.com/underthetreee/auth-api/internal/config"
 	"github.com/underthetreee/auth-api/internal/model"
 )
 
 type AuthService interface {
-	StoreRefreshToken(ctx context.Context, token model.RefreshToken) error
-	RefreshAccessToken(ctx context.Context, token model.RefreshToken) (*model.TokenPair, error)
+	StoreRefreshToken(context.Context, model.RefreshToken) error
+	RefreshAccessToken(context.Context, model.RefreshToken) (*model.TokenPair, error)
 }
 
 type AuthHandler struct {
+	cfg *config.Config
 	svc AuthService
 }
 
-func NewAuthHandler(svc AuthService) *AuthHandler {
+func NewAuthHandler(cfg *config.Config, svc AuthService) *AuthHandler {
 	return &AuthHandler{
+		cfg: cfg,
 		svc: svc,
 	}
 }
@@ -36,7 +39,7 @@ func (h *AuthHandler) Auth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokenPair, err := auth.GenTokenPair(guidParam)
+	tokenPair, err := auth.GenTokenPair(guidParam, h.cfg.JWT.SecretKey)
 	if err != nil {
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		log.Println(err)

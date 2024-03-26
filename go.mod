@@ -5,6 +5,8 @@ go 1.22.1
 require (
 	github.com/beevik/guid v1.0.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/joho/godotenv v1.5.1
+	github.com/kelseyhightower/envconfig v1.4.0
 	go.mongodb.org/mongo-driver v1.14.0
 	golang.org/x/crypto v0.17.0
 )

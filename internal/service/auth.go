@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/underthetreee/auth-api/internal/auth"
+	"github.com/underthetreee/auth-api/internal/config"
 	"github.com/underthetreee/auth-api/internal/model"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -14,11 +15,13 @@ type AuthRepository interface {
 }
 
 type AuthService struct {
+	cfg  *config.Config
 	repo AuthRepository
 }
 
-func NewAuthService(repo AuthRepository) *AuthService {
+func NewAuthService(cfg *config.Config, repo AuthRepository) *AuthService {
 	return &AuthService{
+		cfg:  cfg,
 		repo: repo,
 	}
 }
@@ -46,7 +49,7 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, token model.Refres
 		return nil, err
 	}
 
-	tokenPair, err := auth.GenTokenPair(token.GUID)
+	tokenPair, err := auth.GenTokenPair(token.GUID, s.cfg.JWT.SecretKey)
 	if err != nil {
 		return nil, err
 	}

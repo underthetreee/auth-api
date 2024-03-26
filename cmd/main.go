@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 
+	"github.com/underthetreee/auth-api/internal/config"
 	"github.com/underthetreee/auth-api/internal/repository"
 	"github.com/underthetreee/auth-api/internal/service"
 	api "github.com/underthetreee/auth-api/internal/transport/http"
@@ -12,24 +14,31 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const (
-	listenAddr = ":8080"
-	mongoURI   = "mongodb://localhost:27017"
-)
-
 func main() {
-	ctx := context.Background()
-	clientOptions := options.Client().ApplyURI(mongoURI)
-	c, err := mongo.Connect(ctx, clientOptions)
-	if err != nil {
+	if err := Run(); err != nil {
 		log.Fatal(err)
 	}
+}
 
-	repo := repository.NewAuthRepository(c)
-	svc := service.NewAuthService(repo)
-	authHandler := api.NewAuthHandler(svc)
-	router := initRoutes(authHandler)
+func Run() error {
+	cfg, err := config.Init()
+	if err != nil {
+		return fmt.Errorf("config: %w", err)
+	}
 
-	log.Printf("server is listening on %s\n", listenAddr)
-	http.ListenAndServe(listenAddr, router)
+	c, err := mongo.Connect(context.Background(), options.Client().ApplyURI(cfg.Mongo.URI))
+	if err != nil {
+		return fmt.Errorf("mongo: %w", err)
+	}
+
+	repo := repository.NewAuthRepository(cfg, c)
+	svc := service.NewAuthService(cfg, repo)
+	auth := api.NewAuthHandler(cfg, svc)
+	router := initRoutes(auth)
+
+	log.Printf("server is listening on %s\n", cfg.HTTP.Port)
+	if err := http.ListenAndServe(cfg.HTTP.Port, router); err != nil {
+		return fmt.Errorf("http server: %w", err)
+	}
+	return nil
 }

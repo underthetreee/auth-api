@@ -10,10 +10,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var secretKey = []byte("secret key")
-
-func GenTokenPair(guid string) (*model.TokenPair, error) {
-	token, err := genJWTToken(guid)
+func GenTokenPair(guid string, secretKey string) (*model.TokenPair, error) {
+	token, err := genJWTToken(guid, secretKey)
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +27,7 @@ func GenTokenPair(guid string) (*model.TokenPair, error) {
 	}, nil
 }
 
-func genJWTToken(guid string) (string, error) {
+func genJWTToken(guid string, secretKey string) (string, error) {
 	jwtTokenExpTime := time.Now().Add(time.Hour * 1).Unix()
 
 	t := jwt.NewWithClaims(jwt.SigningMethodHS512,
@@ -38,12 +36,13 @@ func genJWTToken(guid string) (string, error) {
 			"exp":  jwtTokenExpTime,
 		})
 
-	token, err := t.SignedString(secretKey)
+	token, err := t.SignedString([]byte(secretKey))
 	if err != nil {
 		return "", err
 	}
 	return token, nil
 }
+
 func genRefreshToken() (string, error) {
 	tokenBytes := make([]byte, 32)
 	_, err := rand.Read(tokenBytes)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/underthetreee/auth-api/internal/config"
 	"github.com/underthetreee/auth-api/internal/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -13,11 +14,13 @@ import (
 type AuthRepository struct {
 	client *mongo.Client
 	coll   *mongo.Collection
+	cfg    *config.Config
 }
 
-func NewAuthRepository(client *mongo.Client) *AuthRepository {
-	coll := client.Database("test").Collection("tokens")
+func NewAuthRepository(cfg *config.Config, client *mongo.Client) *AuthRepository {
+	coll := client.Database(cfg.Mongo.Name).Collection(cfg.Mongo.Collection)
 	return &AuthRepository{
+		cfg:    cfg,
 		client: client,
 		coll:   coll,
 	}
